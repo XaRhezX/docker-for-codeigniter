@@ -1,0 +1,49 @@
+version: '3'
+services:
+    nginx:    
+      build: ./docker/nginx/  
+      container_name: ci-nginx
+      ports:  
+        - 80:80  
+      depends_on:
+          - php
+          - mysql
+      networks:
+          - ci
+      volumes:  
+        - .:/var/www/html/:rw
+      
+    php:    
+      build: ./docker/php/  
+      container_name: ci-php
+      expose:  
+        - 9000  
+      links:  
+        - mysql  
+      volumes:  
+        - .:/var/www/html/:rw 
+      networks:
+          - ci
+
+    mysql:    
+      image: mariadb:10
+      ports:
+        - 3306:3306      
+      container_name: ci-mysql
+      volumes:  
+        - ci-mysql:/var/lib/mysql 
+      environment:  
+        MYSQL_ROOT_PASSWORD: secret  
+        MYSQL_ROOT_HOST: "%"
+        MYSQL_DATABASE: code-igniter
+        MYSQL_USER: ci
+        MYSQL_PASSWORD: ci
+      networks:
+          - ci
+
+networks:
+    ci:
+        driver: bridge
+volumes:
+    ci-mysql:
+        driver: local
